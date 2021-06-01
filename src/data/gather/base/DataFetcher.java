@@ -10,7 +10,6 @@ import java.util.HashMap;
 
 public class DataFetcher {
     private final HashMap<String, String> options;
-    private final StringBuilder dataContent = new StringBuilder();
     private String baseURL = "https://www.google.com/finance/quote/";
     private String baseURLExtension = ":NASDAQ";
 
@@ -36,7 +35,9 @@ public class DataFetcher {
         InputStreamReader ir = new InputStreamReader(urlConnection.getInputStream());
         BufferedReader br = new BufferedReader(ir);
 
+        StringBuilder dataContent = new StringBuilder();
         String line;
+
         while((line = br.readLine()) != null) {
             dataContent.append(line);
         }
@@ -66,10 +67,6 @@ public class DataFetcher {
             System.err.println("BAD URL");
             return BigDecimal.ZERO;
         }
-    }
-
-    public String getDataContentInString() {
-        return this.dataContent.toString();
     }
 
     public HashMap<String, String> getOptions() {

@@ -17,7 +17,7 @@ public class AutomatedDataFetcher extends DataFetcher {
     private final List<BigDecimal> fetchedDataList = Collections.synchronizedList(new ArrayList<>());
     private final Runnable dataFetchTask;
 
-    public static final long MAX_LIST_SIZE = 10000L;
+    public static final long MAX_LIST_SIZE = 5L;
     public static final long MAX_INTERVAL_LENGTH = 100000L;
 
     public AutomatedDataFetcher(HashMap<String, String> options) {
