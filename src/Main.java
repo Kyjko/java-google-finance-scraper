@@ -1,7 +1,5 @@
 import data.gather.advanced.AutomatedDataFetcher;
-import data.gather.base.DataFetcher;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -11,15 +9,15 @@ public class Main {
 
         HashMap<String, String> options = new HashMap<>();
         options.put("quote", "TSLA");
-        options.put("print_data", "Y");
-        options.put("interval", "10");
-        options.put("sleep_time", "30");
+        options.put("print_data", "N");
+        options.put("interval", "max");
+        options.put("sleep_time", "10");
 
         //DataFetcher df = new DataFetcher(options);
         AutomatedDataFetcher adf = new AutomatedDataFetcher(options);
         adf.getAutomatedData();
+        adf.compare();
         List<BigDecimal> res = adf.getFetchedDataList();
-
         /*for(var r : res) {
             System.out.println(r);
         }*/

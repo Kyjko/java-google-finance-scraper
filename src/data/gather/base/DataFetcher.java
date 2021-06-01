@@ -40,31 +40,32 @@ public class DataFetcher {
         while((line = br.readLine()) != null) {
             dataContent.append(line);
         }
-
         var stringDataContent = dataContent.toString();
 
-        if(this.options.get("verbose") != null && this.options.get("verbose").equals("Y")) {
+        if (this.options.get("verbose") != null && this.options.get("verbose").equals("Y")) {
             System.out.println(stringDataContent);
         }
 
         var idx = stringDataContent.indexOf("<div class=\"YMlKec fxKbKc\">");
-        int i, j;
-        i = idx;
-        while (stringDataContent.charAt(i) != '$') {
-            i++;
+        if(idx != -1) {
+            int i, j;
+            i = idx;
+            while (stringDataContent.charAt(i) != '$') {
+                i++;
+            }
+            j = i;
+            while (stringDataContent.charAt(j) != '<') {
+                j++;
+            }
+            var resString = stringDataContent.substring(i, j);
+            if (this.options.get("print_data") != null && this.options.get("print_data").equals("Y")) {
+                System.out.println("===== Price of " + this.options.get("quote") + " : " + resString + " =====");
+            }
+            return new BigDecimal(resString.substring(1));
+        } else {
+            System.err.println("BAD URL");
+            return BigDecimal.ZERO;
         }
-        j = i;
-        while(stringDataContent.charAt(j) != '<') {
-            j++;
-        }
-
-        var resString = stringDataContent.substring(i, j);
-        if(this.options.get("print_data") != null && this.options.get("print_data").equals("Y")) {
-            System.out.println("===== Price of " + this.options.get("quote") + " : " + resString + " =====");
-        }
-
-        return new BigDecimal(resString.substring(1));
-
     }
 
     public String getDataContentInString() {
