@@ -9,9 +9,10 @@ public class Main {
 
         HashMap<String, String> options = new HashMap<>();
         options.put("quote", "TSLA");
-        options.put("print_data", "Y");
+        options.put("print_data", "N");
         options.put("interval", "max");
         options.put("sleep_time", "10");
+        options.put("graph", "Y");
 
         //DataFetcher df = new DataFetcher(options);
         AutomatedDataFetcher adf = new AutomatedDataFetcher(options);

@@ -1,5 +1,6 @@
 package data.gather.advanced;
 
+import data.display.Graph;
 import data.gather.base.DataFetcher;
 
 import java.io.IOException;
@@ -15,8 +16,9 @@ public class AutomatedDataFetcher extends DataFetcher {
     private final HashMap<String, String> options;
     private final List<BigDecimal> fetchedDataList = Collections.synchronizedList(new ArrayList<>());
     private final Callable<Integer> dataFetchTask;
+    private final Callable<Integer> dataRenderTask;
 
-    public static final long MAX_LIST_SIZE = 5L;
+    public static final long MAX_LIST_SIZE = 50L;
     public static final long MAX_INTERVAL_LENGTH = 100000L;
 
     private BigDecimal superGetData() {
@@ -58,11 +60,46 @@ public class AutomatedDataFetcher extends DataFetcher {
 
             return 0;
         };
+
+        this.dataRenderTask = () -> {
+            Graph gr = new Graph("figure 1", 1920, 1080);
+
+            ExecutorService ex = Executors.newSingleThreadExecutor();
+            ex.submit(() -> {
+                while(!gr.getQuit()) {
+                    gr.loadData(this.fetchedDataList);
+                }
+            });
+
+            return 0;
+        };
+
     }
 
     public void getAutomatedData() {
         ExecutorService ex = Executors.newSingleThreadExecutor();
         Future<Integer> f = ex.submit(this.dataFetchTask);
+
+        if(this.options.get("graph") != null && this.options.get("graph").equals("Y")) {
+
+            System.out.println("Graphing mode enabled");
+
+            ExecutorService ex2 = Executors.newSingleThreadExecutor();
+
+            Future<Integer> f2 = ex2.submit(this.dataRenderTask);
+            Integer x2 = null;
+            try {
+                x2 = f2.get();
+
+            } catch(InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+            if(x2 != null && x2 < 0) {
+                System.err.println("ERROR in graphing task!");
+                ex.shutdown();
+            }
+        }
+
         System.out.println("Getting data...");
         Integer x = null;
         try {
@@ -74,6 +111,8 @@ public class AutomatedDataFetcher extends DataFetcher {
             System.err.println("ERROR in getAutomatedData!");
             ex.shutdown();
         }
+
+
     }
 
     public void compare() {
