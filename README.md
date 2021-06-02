@@ -1,5 +1,7 @@
 # java-google-finance-scraper
 
+## Get financial instrument data from the Google Finance API real-time!
+
 Example:
  ```java
  public class Main {
