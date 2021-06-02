@@ -9,7 +9,7 @@ public class Main {
 
         HashMap<String, String> options = new HashMap<>();
         options.put("quote", "TSLA");
-        options.put("print_data", "N");
+        options.put("print_data", "Y");
         options.put("interval", "max");
         options.put("sleep_time", "10");
 

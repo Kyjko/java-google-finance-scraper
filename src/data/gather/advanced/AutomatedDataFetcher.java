@@ -8,17 +8,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class AutomatedDataFetcher extends DataFetcher {
 
     private final HashMap<String, String> options;
     private final List<BigDecimal> fetchedDataList = Collections.synchronizedList(new ArrayList<>());
-    private final Runnable dataFetchTask;
+    private final Callable<Integer> dataFetchTask;
 
     public static final long MAX_LIST_SIZE = 5L;
     public static final long MAX_INTERVAL_LENGTH = 100000L;
+
+    private BigDecimal superGetData() {
+        try {
+            return super.getData();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return BigDecimal.ZERO;
+    }
 
     public AutomatedDataFetcher(HashMap<String, String> options) {
         super(options);
@@ -29,21 +38,16 @@ public class AutomatedDataFetcher extends DataFetcher {
         }
 
         this.dataFetchTask = () -> {
-            var interval = Integer.parseInt(this.options.get("interval"));
-            var sleepTime = Integer.parseInt(this.options.get("sleep_time"));
-            for(int i = 0; i < interval; i++) {
-                try {
-                    var res = super.getData();
-                    if(res.equals(BigDecimal.ZERO)) {
-                        System.exit(0);
-                    }
-                    fetchedDataList.add(res);
-                    if(fetchedDataList.size() > MAX_LIST_SIZE) {
-                        fetchedDataList.remove(0);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return;
+            var interval = Integer.parseInt(options.get("interval"));
+            var sleepTime = Integer.parseInt(options.get("sleep_time"));
+            for (int i = 0; i < interval; i++) {
+                var res = superGetData();
+                if (res.equals(BigDecimal.ZERO)) {
+                    return -1;
+                }
+                fetchedDataList.add(res);
+                if (fetchedDataList.size() > MAX_LIST_SIZE) {
+                    fetchedDataList.remove(0);
                 }
                 try {
                     Thread.sleep(sleepTime);
@@ -51,13 +55,25 @@ public class AutomatedDataFetcher extends DataFetcher {
                     e.printStackTrace();
                 }
             }
+
+            return 0;
         };
     }
 
     public void getAutomatedData() {
-        Executor ex = Executors.newSingleThreadExecutor();
-        ex.execute(this.dataFetchTask);
+        ExecutorService ex = Executors.newSingleThreadExecutor();
+        Future<Integer> f = ex.submit(this.dataFetchTask);
         System.out.println("Getting data...");
+        Integer x = null;
+        try {
+            x = f.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        if(x != null && x < 0) {
+            System.err.println("ERROR in getAutomatedData!");
+            ex.shutdown();
+        }
     }
 
     public void compare() {
@@ -73,7 +89,7 @@ public class AutomatedDataFetcher extends DataFetcher {
         return fetchedDataList;
     }
 
-    public Runnable getDataFetchTask() {
+    public Callable<Integer> getDataFetchTask() {
         return dataFetchTask;
     }
 }
